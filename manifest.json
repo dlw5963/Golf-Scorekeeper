@@ -1,0 +1,10 @@
+
+{
+  "name": "Golf Score Keeper",
+  "short_name": "GolfScore",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#1a1a1a",
+  "icons": []
+}

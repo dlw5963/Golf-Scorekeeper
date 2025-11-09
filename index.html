@@ -1,0 +1,187 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Golf Score Keeper</title>
+  <meta name="theme-color" content="#1a1a1a" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body data-theme="dark" data-palette="original">
+  <header class="app-header">
+    <h1>Golf Score</h1>
+    <div class="header-controls">
+      <select id="paletteToggle" aria-label="Palette">
+        <option value="original" selected>Original</option>
+        <option value="tournament">Tournament</option>
+      </select>
+      <button id="themeToggle" aria-label="Toggle theme" class="ghost">Light</button>
+      <button id="historyIcon" aria-label="History" class="ghost">🕘</button>
+    </div>
+  </header>
+  <div id="announcer" aria-live="polite" aria-atomic="true" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;"></div>
+
+  <main class="container">
+    <!-- Setup Screen -->
+    <section id="setup" class="screen">
+      <div class="card">
+        <h2>Start a New Round</h2>
+
+        <div class="row">
+          <label for="coursePreset">Course:</label>
+          <select id="coursePreset">
+            <option value="custom" selected>Custom</option>
+            <option value="beechwood9">Beechwood 9 (Par 36)</option>
+            <option value="beechwood18">Beechwood 18 (Par 72)</option>
+          </select>
+        </div>
+
+        <div class="row settings-row">
+          <label for="courseRating">Course Rating:</label>
+          <input id="courseRating" type="number" step="0.1" min="60" max="80" value="72.0" style="width:100px">
+          <label for="courseSlope">Slope:</label>
+          <input id="courseSlope" type="number" step="1" min="55" max="155" value="113" style="width:90px">
+        </div>
+
+        <div class="row">
+          <span>Holes:</span>
+          <div class="segmented">
+            <input type="radio" name="holes" id="holes9" value="9" checked>
+            <label for="holes9">9 Holes</label>
+            <input type="radio" name="holes" id="holes18" value="18">
+            <label for="holes18">18 Holes</label>
+          </div>
+        </div>
+
+        <div class="row">
+          <label for="playerCount">Number of Players:</label>
+          <select id="playerCount">
+            <option value="1">1 Player</option>
+            <option value="2" selected>2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+          </select>
+        </div>
+
+        <h3>Player Names & Handicap Index</h3>
+        <div id="playerNames" class="row" style="flex-direction:column; gap:8px;"></div>
+        <p style="opacity:.8;font-size:14px;margin-top:-8px">Tip: set each player's Handicap Index (HI) next to their name.</p>
+
+        <div id="parEditor" class="card" style="margin-top:12px;">
+          <h3>Par per Hole</h3>
+          <div id="parInputs" class="row" style="flex-wrap:wrap;"></div>
+        </div>
+
+        <div class="row">
+          <label for="wakeLockToggle">Keep Screen Awake</label>
+          <label class="switch">
+            <input type="checkbox" id="wakeLockToggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <button id="startBtn" style="width:100%;">Start Round</button>
+      </div>
+    </section>
+
+    <!-- Scorecard Screen -->
+    <section id="scorecard" class="screen" hidden>
+      <div class="card">
+        <div class="controls-header">
+          <select id="playerCountLive" aria-label="Live player count selector">
+            <option value="1">1 Player</option>
+            <option value="2">2 Players</option>
+            <option value="3">3 Players</option>
+            <option value="4">4 Players</option>
+          </select>
+          <div class="controls">
+            <button id="undoBtn" aria-label="Undo last action" disabled>Undo</button>
+            <button id="redoBtn" aria-label="Redo last action" disabled>Redo</button>
+            <button id="clearLastBtn" aria-label="Clear last score" disabled>Clear Last</button>
+            <button id="resetBtn" aria-label="Reset round" class="secondary">Reset</button>
+          </div>
+        </div>
+
+        <div class="totals-panel" id="totalsPanel"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead id="thead"></thead>
+            <tbody id="tbody"></tbody>
+            <tfoot id="tfoot"></tfoot>
+          </table>
+        </div>
+        <button id="endRoundBtn" style="display:block; width:100%;">End Round</button>
+      </div>
+    </section>
+
+    <!-- Celebration Screen -->
+    <section id="celebration" class="screen" hidden>
+      <canvas id="confettiCanvas"></canvas>
+      <div class="card">
+        <div class="hero" id="celebrationTitle">Winner!</div>
+        <div class="sub" id="celebrationSubtitle">—</div>
+        <div class="note">Auto-advancing to Summary in <span id="celebrationCountdown">10</span>s…</div>
+        <button id="toSummaryBtn" style="width:100%;">Continue to Summary</button>
+      </div>
+    </section>
+
+    <!-- Summary Screen -->
+    <section id="summary" class="screen" hidden>
+      <div class="card">
+        <canvas id="summaryConfetti" class="confetti-canvas" style="height:140px;"></canvas>
+        <h2>Round Summary</h2>
+        <div class="winner-highlight" id="winnerBanner" hidden>Winner: —</div>
+        <h3>Final Scores</h3>
+        <ul class="total-scores" id="finalScores"></ul>
+        <div class="share-export-actions">
+          <button id="restartAppBtn" class="secondary">Restart App</button>
+          <button id="replayConfettiBtn" class="secondary">Replay Confetti</button>
+          <button id="shareResultsBtn">Share Results</button>
+          <button id="shareLinkBtn">Copy Shareable Link</button>
+          <button id="exportCsvBtn">Export as CSV</button>
+          <button id="exportTextBtn">Export as Text</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- History Screen -->
+    <section id="history" class="screen" hidden>
+      <div class="card">
+        <h2>Saved Rounds</h2>
+        <ul class="history-list" id="historyList"></ul>
+        <div class="controls" style="justify-content:flex-start">
+          <button id="closeHistoryBtn" class="secondary">Close</button>
+          <button id="clearHistoryBtn" class="ghost">Clear History</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer">&copy; 2025 Golf Score Keeper</footer>
+
+  <!-- Keypad Overlay -->
+  <div id="keypadOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="keypadTitle">
+    <div class="modal">
+      <div class="modal-header"><h2 id="keypadTitle">Enter Score</h2>
+        <button class="close-btn" data-close="keypadOverlay">✕</button></div>
+      <div class="modal-content">
+        <div class="keypad">
+          <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+          <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+          <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+          <button data-k="-1">-1</button><button data-k="0">0</button><button data-k="+1">+1</button>
+        </div>
+        <div class="keypad-actions">
+          <button id="keypadClear" class="ghost">Clear</button>
+          <button id="keypadDone">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script>
+</body>
+</html>
